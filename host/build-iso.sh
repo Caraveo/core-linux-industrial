@@ -64,34 +64,31 @@ echo "Verifying build environment..."
 limactl shell "$VM_NAME" -- ls -lh /tmp/build-core.sh
 limactl shell "$VM_NAME" -- test -d /tmp/branding && echo "✓ Branding files ready" || echo "⚠ Branding files missing"
 
-# Run build with verbose output
+# Run build with verbose output and progress indicators
 echo ""
 echo "Starting build (verbose mode)..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "All output will be displayed in real-time below:"
+echo "Build Time Estimates:"
+echo "  - Kernel build: 30-60 minutes"
+echo "  - Kernel modules: 10-20 minutes"
+echo "  - ISO build: 1-2 hours"
+echo "  - Total: 2-4 hours"
+echo ""
+echo "All output will be displayed in real-time below with timestamps:"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Run with unbuffered output and verbose flags
-# Use script command for better output capture, or stdbuf if available
-if command -v stdbuf >/dev/null 2>&1; then
-    limactl shell "$VM_NAME" -- sudo bash -x -c "
-        export BRANDING_DIR=/tmp/branding
-        export CORE_BUILD_ROOT=/opt/core-build
-        export PS4='+ [BUILD] '
-        set -x
-        bash -x /tmp/build-core.sh
-    " 2>&1 | stdbuf -oL -eL tee /tmp/core-build.log
-else
-    # Fallback: use script or just direct output
-    limactl shell "$VM_NAME" -- sudo bash -x -c "
-        export BRANDING_DIR=/tmp/branding
-        export CORE_BUILD_ROOT=/opt/core-build
-        export PS4='+ [BUILD] '
-        set -x
-        bash -x /tmp/build-core.sh
-    " 2>&1 | tee /tmp/core-build.log
-fi
+# Run with unbuffered output and progress timestamps
+limactl shell "$VM_NAME" -- sudo bash -x -c "
+    export BRANDING_DIR=/tmp/branding
+    export CORE_BUILD_ROOT=/opt/core-build
+    export PS4='+ [\$(date +%H:%M:%S)] '
+    set -x
+    bash -x /tmp/build-core.sh
+" 2>&1 | while IFS= read -r line; do
+    echo "[$(date +%H:%M:%S)] $line"
+    echo "$line" >> /tmp/core-build.log
+done
 
 echo ""
 echo -e "${GREEN}✓ Build complete!${NC}"

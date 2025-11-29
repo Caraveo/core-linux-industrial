@@ -100,13 +100,19 @@ build_kernel() {
     # Set kernel name
     sed -i 's/CONFIG_LOCALVERSION=.*/CONFIG_LOCALVERSION="-CORE_Industrial"/' .config
     
-    # Build kernel
-    echo "Building kernel (this will take a while)..."
-    make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- -j$(nproc) KCFLAGS="-O2"
+    # Build kernel with progress output
+    echo "Building kernel (this will take 30-60 minutes)..."
+    echo "Progress will be shown below..."
+    make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- -j$(nproc) KCFLAGS="-O2" 2>&1 | while IFS= read -r line; do
+        echo "[$(date +%H:%M:%S)] $line"
+    done
     
     # Build modules
-    echo "Building kernel modules..."
-    make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- -j$(nproc) modules
+    echo "Building kernel modules (this will take 10-20 minutes)..."
+    echo "Progress will be shown below..."
+    make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- -j$(nproc) modules 2>&1 | while IFS= read -r line; do
+        echo "[$(date +%H:%M:%S)] $line"
+    done
     
     # Install kernel and modules to staging
     KERNEL_STAGING="$WORK_DIR/kernel-staging"
@@ -326,9 +332,14 @@ build_iso() {
     
     cd "$WORK_DIR/core-live"
     
-    # Build the ISO
-    echo "Building ISO (this will take a very long time)..."
-    lb build 2>&1 | tee "$OUTPUT_DIR/build.log"
+    # Build the ISO with progress output
+    echo "Building ISO (this will take 1-2 hours)..."
+    echo "This is downloading packages and building the live system..."
+    echo "Progress will be shown below with timestamps..."
+    lb build 2>&1 | while IFS= read -r line; do
+        echo "[$(date +%H:%M:%S)] $line"
+        echo "$line" >> "$OUTPUT_DIR/build.log"
+    done
     
     # Move ISO to output directory
     if [[ -f binary.hybrid.iso ]]; then

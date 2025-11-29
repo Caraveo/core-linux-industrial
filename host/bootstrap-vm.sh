@@ -46,14 +46,20 @@ echo ""
 
 # Run with verbose output (unbuffered for real-time display)
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "All output will be displayed in real-time below:"
+echo "Bootstrap Time Estimate: 10-15 minutes"
+echo "Installing: build tools, cross-compilers, live-build, etc."
+echo ""
+echo "All output will be displayed in real-time below with timestamps:"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
 limactl shell "$VM_NAME" -- sudo bash -x -c "
     export PS4='+ [\$(date +%H:%M:%S)] '
     bash -x /tmp/vm-bootstrap.sh
-" 2>&1 | stdbuf -oL -eL tee /tmp/core-bootstrap.log
+" 2>&1 | while IFS= read -r line; do
+    echo "[$(date +%H:%M:%S)] $line"
+    echo "$line" >> /tmp/core-bootstrap.log
+done
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
