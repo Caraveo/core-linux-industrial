@@ -50,7 +50,8 @@ if limactl list | grep -q "$VM_NAME"; then
     else
         echo "Using existing VM..."
         limactl start "$VM_NAME" || true
-        exit 0
+        # Don't exit - continue to copy files
+        echo "Continuing to ensure files are copied..."
     fi
 fi
 
@@ -114,7 +115,11 @@ $LIMA_CMD shell "$VM_NAME" -- bash -c "echo 'VM is ready'" || {
 
 # Create directories in VM (with sudo for /opt)
 echo "Creating build directories in VM..."
-$LIMA_CMD shell "$VM_NAME" -- bash -c "sudo mkdir -p /opt/core-build"
+$LIMA_CMD shell "$VM_NAME" -- bash -c "sudo mkdir -p /opt/core-build" || {
+    echo "Warning: Could not create /opt/core-build, trying again..."
+    sleep 2
+    $LIMA_CMD shell "$VM_NAME" -- bash -c "sudo mkdir -p /opt/core-build"
+}
 VM_USER=$($LIMA_CMD shell "$VM_NAME" -- bash -c "whoami")
 VM_GROUP=$($LIMA_CMD shell "$VM_NAME" -- bash -c "id -gn")
 $LIMA_CMD shell "$VM_NAME" -- bash -c "sudo chown $VM_USER:$VM_GROUP /opt/core-build"
