@@ -52,16 +52,16 @@ apt-get install -y \
     binutils-x86-64-linux-gnu \
     xorriso \
     squashfs-tools \
-    grub-pc-bin \
+    grub-common \
+    grub2-common \
     grub-efi-amd64-bin \
-    grub-efi-ia32-bin \
     dialog \
     whiptail \
     rsync \
     dosfstools \
     mtools \
     isolinux \
-    syslinux-utils \
+    syslinux \
     cpio \
     tar \
     gzip \
