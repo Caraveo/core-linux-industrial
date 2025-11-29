@@ -18,14 +18,14 @@ echo -e "${RED}╚════════════════════�
 echo ""
 
 # Check if VM exists
-if ! limactl list 2>/dev/null | grep -q "$VM_NAME"; then
+if ! limactl list | grep -q "$VM_NAME"; then
     echo -e "${RED}Error: VM '$VM_NAME' not found${NC}"
     echo "Run: ./host/setup-lima.sh first"
     exit 1
 fi
 
 # Start VM if not running
-if ! limactl list 2>/dev/null | grep "$VM_NAME" | grep -q "Running"; then
+if ! limactl list | grep "$VM_NAME" | grep -q "Running"; then
     echo "Starting VM..."
     limactl start "$VM_NAME"
     sleep 5

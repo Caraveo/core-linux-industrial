@@ -23,14 +23,14 @@ echo -e "${YELLOW}⚠ This will take 2-4 hours!${NC}"
 echo ""
 
 # Check if VM exists
-if ! limactl list 2>/dev/null | grep -q "$VM_NAME"; then
+if ! limactl list | grep -q "$VM_NAME"; then
     echo -e "${RED}Error: VM '$VM_NAME' not found${NC}"
     echo "Run: ./host/setup-lima.sh first"
     exit 1
 fi
 
 # Start VM if not running
-if ! limactl list 2>/dev/null | grep "$VM_NAME" | grep -q "Running"; then
+if ! limactl list | grep "$VM_NAME" | grep -q "Running"; then
     echo "Starting VM..."
     limactl start "$VM_NAME"
     sleep 5
@@ -38,11 +38,9 @@ fi
 
 # Copy branding if needed
 echo "Ensuring branding files are in VM..."
-limactl shell "$VM_NAME" -- mkdir -p /opt/core-build/branding
+limactl shell "$VM_NAME" -- bash -c "sudo mkdir -p /opt/core-build/branding"
 # Copy branding via mounted directory or base64
-if [[ -d "/mnt/CORE/branding" ]]; then
-    limactl shell "$VM_NAME" -- cp -r /mnt/CORE/branding /opt/core-build/ 2>/dev/null || true
-fi
+limactl shell "$VM_NAME" -- bash -c "test -d /mnt/CORE/branding && cp -rv /mnt/CORE/branding /opt/core-build/ || cp -rv /tmp/branding /opt/core-build/"
 
 # Run build script
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
