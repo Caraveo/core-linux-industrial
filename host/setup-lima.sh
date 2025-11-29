@@ -50,23 +50,25 @@ if limactl list | grep -q "$VM_NAME"; then
     else
         echo "Using existing VM..."
         limactl start "$VM_NAME" || true
-        # Don't exit - continue to copy files
-        echo "Continuing to ensure files are copied..."
+        # Skip VM creation, go straight to file copying
+        SKIP_VM_CREATE=true
     fi
 fi
-
-# Create Lima VM using ubuntu template
-echo "Creating Lima VM instance (Ubuntu 22.04 ARM64)..."
-echo "This will download the Ubuntu image if needed..."
-echo ""
 
 # Use limactl (correct command)
 LIMA_CMD="limactl"
 
-# Create Lima VM using ubuntu template
-# Lima uses YAML config files, so we'll create one dynamically
-LIMA_YAML="/tmp/core-build-lima.yaml"
-cat > "$LIMA_YAML" << YAML_EOF
+# Create VM only if it doesn't exist
+if [[ "${SKIP_VM_CREATE:-false}" != "true" ]]; then
+    # Create Lima VM using ubuntu template
+    echo "Creating Lima VM instance (Ubuntu 22.04 ARM64)..."
+    echo "This will download the Ubuntu image if needed..."
+    echo ""
+    
+    # Create Lima VM using ubuntu template
+    # Lima uses YAML config files, so we'll create one dynamically
+    LIMA_YAML="/tmp/core-build-lima.yaml"
+    cat > "$LIMA_YAML" << YAML_EOF
 # CORE Linux Build VM
 images:
   - location: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-arm64.img"
@@ -91,17 +93,20 @@ provision:
       apt-get install -y sudo
 YAML_EOF
 
-echo "Creating VM from YAML config..."
-$LIMA_CMD create --name="$VM_NAME" "$LIMA_YAML" || {
-    echo -e "${RED}Error: Failed to create VM${NC}"
+    echo "Creating VM from YAML config..."
+    $LIMA_CMD create --name="$VM_NAME" "$LIMA_YAML" || {
+        echo -e "${RED}Error: Failed to create VM${NC}"
+        rm -f "$LIMA_YAML"
+        exit 1
+    }
     rm -f "$LIMA_YAML"
-    exit 1
-}
-rm -f "$LIMA_YAML"
 
-# Start VM
-echo "Starting VM..."
-$LIMA_CMD start "$VM_NAME"
+    # Start VM
+    echo "Starting VM..."
+    $LIMA_CMD start "$VM_NAME"
+else
+    echo "Skipping VM creation (using existing VM)..."
+fi
 
 # Wait for VM to be ready
 echo "Waiting for VM to be ready..."
