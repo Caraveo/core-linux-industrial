@@ -40,6 +40,29 @@ export DEBIAN_FRONTEND=noninteractive
 # Enable multiarch for x86_64 packages (needed for GRUB and cross-compilation)
 echo "Enabling multiarch support for x86_64..."
 dpkg --add-architecture amd64
+
+# Configure apt to use standard Ubuntu archive for amd64 packages
+# (ports.ubuntu.com doesn't have amd64 packages)
+echo "Configuring apt sources for amd64 architecture..."
+
+# First, restrict existing ports.ubuntu.com entries to arm64 only
+if ! grep -q "deb \[arch=arm64\]" /etc/apt/sources.list; then
+    echo "Restricting existing sources to arm64 architecture..."
+    sed -i 's|^deb http://ports.ubuntu.com/ubuntu-ports|deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports|g' /etc/apt/sources.list
+fi
+
+# Add standard Ubuntu repositories for amd64 if not already present
+if ! grep -q "deb \[arch=amd64\]" /etc/apt/sources.list; then
+    echo "Adding standard Ubuntu repositories for amd64..."
+    cat >> /etc/apt/sources.list << 'EOF'
+# Standard Ubuntu repositories for amd64 (cross-compilation)
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy main restricted universe multiverse
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy-backports main restricted universe multiverse
+deb [arch=amd64] http://security.ubuntu.com/ubuntu jammy-security main restricted universe multiverse
+EOF
+fi
+
 apt-get update -qq
 
 # Install essential build tools (required)
@@ -86,13 +109,15 @@ echo "Installing GRUB packages (for ISO bootloader)..."
 apt-get install -y grub-common grub2-common || echo "Warning: GRUB packages not available, continuing..."
 apt-get install -y grub-efi-amd64-bin:amd64 2>/dev/null || echo "Warning: grub-efi-amd64-bin:amd64 not available, will use alternatives"
 
-# Install additional tools for kernel building
+# Install additional tools for kernel building (optional)
 echo "Installing kernel build dependencies..."
 apt-get install -y \
     libc6-dev \
-    libc6-dev-amd64-cross \
-    linux-libc-dev \
-    linux-libc-dev-amd64-cross
+    linux-libc-dev || echo "Warning: Some kernel build dependencies not available"
+
+# Try to install cross-architecture dev packages (may not be available)
+apt-get install -y libc6-dev-amd64-cross linux-libc-dev-amd64-cross 2>/dev/null || \
+    echo "Warning: Cross-architecture dev packages not available, continuing..."
 
 # Verify cross-compiler installation
 echo "Verifying cross-compilation toolchain..."
