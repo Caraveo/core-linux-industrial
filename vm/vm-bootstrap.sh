@@ -42,7 +42,7 @@ echo "Enabling multiarch support for x86_64..."
 dpkg --add-architecture amd64
 apt-get update -qq
 
-# Install essential build tools
+# Install essential build tools (required)
 echo "Installing build essentials..."
 apt-get install -y \
     build-essential \
@@ -56,9 +56,6 @@ apt-get install -y \
     binutils-x86-64-linux-gnu \
     xorriso \
     squashfs-tools \
-    grub-common \
-    grub2-common \
-    grub-efi-amd64-bin:amd64 \
     dialog \
     whiptail \
     rsync \
@@ -79,7 +76,15 @@ apt-get install -y \
     libelf-dev \
     libncurses-dev \
     kmod \
-    pkg-config
+    pkg-config || {
+    echo -e "${RED}Error: Failed to install essential packages${NC}"
+    exit 1
+}
+
+# Install GRUB packages (optional, for ISO bootloader)
+echo "Installing GRUB packages (for ISO bootloader)..."
+apt-get install -y grub-common grub2-common || echo "Warning: GRUB packages not available, continuing..."
+apt-get install -y grub-efi-amd64-bin:amd64 2>/dev/null || echo "Warning: grub-efi-amd64-bin:amd64 not available, will use alternatives"
 
 # Install additional tools for kernel building
 echo "Installing kernel build dependencies..."
