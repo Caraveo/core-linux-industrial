@@ -38,7 +38,7 @@ fi
 
 # Copy branding if needed
 echo "Ensuring branding files are in VM..."
-limactl shell "$VM_NAME" -- bash -c "sudo mkdir -p /opt/core-build/branding"
+limactl shell "$VM_NAME" -- bash -c "sudo mkdir -p /opt/core-build/branding && sudo chown -R \$(whoami):\$(id -gn) /opt/core-build/branding"
 # Copy branding via mounted directory or base64
 limactl shell "$VM_NAME" -- bash -c "test -d /mnt/CORE/branding && cp -rv /mnt/CORE/branding /opt/core-build/ || cp -rv /tmp/branding /opt/core-build/"
 
