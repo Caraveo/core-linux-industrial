@@ -44,8 +44,16 @@ echo "Script location: /tmp/vm-bootstrap.sh"
 limactl shell "$VM_NAME" -- ls -lh /tmp/vm-bootstrap.sh
 echo ""
 
-# Run with verbose output
-limactl shell "$VM_NAME" -- sudo bash -x /tmp/vm-bootstrap.sh 2>&1 | tee /tmp/core-bootstrap.log
+# Run with verbose output (unbuffered for real-time display)
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "All output will be displayed in real-time below:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+limactl shell "$VM_NAME" -- sudo bash -x -c "
+    export PS4='+ [\$(date +%H:%M:%S)] '
+    bash -x /tmp/vm-bootstrap.sh
+" 2>&1 | stdbuf -oL -eL tee /tmp/core-bootstrap.log
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

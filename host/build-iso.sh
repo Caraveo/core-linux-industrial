@@ -69,11 +69,31 @@ limactl shell "$VM_NAME" -- test -d /tmp/branding && echo "✓ Branding files re
 # Run build with verbose output
 echo ""
 echo "Starting build (verbose mode)..."
-limactl shell "$VM_NAME" -- sudo bash -x -c "
-    export BRANDING_DIR=/tmp/branding
-    export CORE_BUILD_ROOT=/opt/core-build
-    bash -x /tmp/build-core.sh
-" 2>&1 | tee /tmp/core-build.log
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "All output will be displayed in real-time below:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Run with unbuffered output and verbose flags
+# Use script command for better output capture, or stdbuf if available
+if command -v stdbuf >/dev/null 2>&1; then
+    limactl shell "$VM_NAME" -- sudo bash -x -c "
+        export BRANDING_DIR=/tmp/branding
+        export CORE_BUILD_ROOT=/opt/core-build
+        export PS4='+ [BUILD] '
+        set -x
+        bash -x /tmp/build-core.sh
+    " 2>&1 | stdbuf -oL -eL tee /tmp/core-build.log
+else
+    # Fallback: use script or just direct output
+    limactl shell "$VM_NAME" -- sudo bash -x -c "
+        export BRANDING_DIR=/tmp/branding
+        export CORE_BUILD_ROOT=/opt/core-build
+        export PS4='+ [BUILD] '
+        set -x
+        bash -x /tmp/build-core.sh
+    " 2>&1 | tee /tmp/core-build.log
+fi
 
 echo ""
 echo -e "${GREEN}✓ Build complete!${NC}"
