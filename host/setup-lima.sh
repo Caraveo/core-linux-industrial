@@ -104,13 +104,28 @@ $LIMA_CMD start "$VM_NAME"
 
 # Wait for VM to be ready
 echo "Waiting for VM to be ready..."
-sleep 20
+sleep 5
+
+# Verify VM is accessible (suppress shell init errors)
+echo "Verifying VM connectivity..."
+$LIMA_CMD shell "$VM_NAME" -- bash -c "echo 'VM is ready'" 2>/dev/null || {
+    echo -e "${YELLOW}Warning: Shell init had errors (this is normal), continuing...${NC}"
+}
+
+# Create directories in VM (with sudo for /opt)
+echo "Creating build directories in VM..."
+$LIMA_CMD shell "$VM_NAME" -- bash -c "sudo mkdir -p /opt/core-build" 2>/dev/null
+VM_USER=$($LIMA_CMD shell "$VM_NAME" -- bash -c "whoami" 2>/dev/null)
+VM_GROUP=$($LIMA_CMD shell "$VM_NAME" -- bash -c "id -gn" 2>/dev/null)
+$LIMA_CMD shell "$VM_NAME" -- bash -c "sudo chown $VM_USER:$VM_GROUP /opt/core-build" 2>/dev/null
+$LIMA_CMD shell "$VM_NAME" -- bash -c "mkdir -p /tmp/core-build" 2>/dev/null
+
+echo "✓ Directories created"
+$LIMA_CMD shell "$VM_NAME" -- bash -c "ls -ld /opt/core-build /tmp/core-build" 2>/dev/null
 
 # Copy scripts to VM
+echo ""
 echo "Copying build scripts to VM..."
-
-# Create directories in VM
-$LIMA_CMD shell "$VM_NAME" -- mkdir -p /opt/core-build /tmp/core-build
 
 # Copy files using lima's built-in copy (if available) or scp
 # Copy files - try mounted directory first, then base64
@@ -118,36 +133,33 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "Transferring files to VM..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-if $LIMA_CMD shell "$VM_NAME" -- test -d /mnt/CORE 2>/dev/null; then
+# Suppress shell init errors (cd errors are harmless)
+if $LIMA_CMD shell "$VM_NAME" -- bash -c "test -d /mnt/CORE" 2>/dev/null; then
     echo "✓ Mounted directory found at /mnt/CORE"
     echo "Copying vm-bootstrap.sh..."
-    $LIMA_CMD shell "$VM_NAME" -- cp -v /mnt/CORE/vm/vm-bootstrap.sh /tmp/vm-bootstrap.sh
-    $LIMA_CMD shell "$VM_NAME" -- chmod +x /tmp/vm-bootstrap.sh
-    $LIMA_CMD shell "$VM_NAME" -- ls -lh /tmp/vm-bootstrap.sh
+    $LIMA_CMD shell "$VM_NAME" -- bash -c "cp -v /mnt/CORE/vm/vm-bootstrap.sh /tmp/vm-bootstrap.sh && chmod +x /tmp/vm-bootstrap.sh && ls -lh /tmp/vm-bootstrap.sh" 2>/dev/null
     
     echo "Copying build-core.sh..."
-    $LIMA_CMD shell "$VM_NAME" -- cp -v /mnt/CORE/build/build-core.sh /tmp/build-core.sh
-    $LIMA_CMD shell "$VM_NAME" -- chmod +x /tmp/build-core.sh
-    $LIMA_CMD shell "$VM_NAME" -- ls -lh /tmp/build-core.sh
+    $LIMA_CMD shell "$VM_NAME" -- bash -c "cp -v /mnt/CORE/build/build-core.sh /tmp/build-core.sh && chmod +x /tmp/build-core.sh && ls -lh /tmp/build-core.sh" 2>/dev/null
     
     echo "Copying branding directory..."
-    $LIMA_CMD shell "$VM_NAME" -- cp -rv /mnt/CORE/branding /tmp/branding 2>&1 | head -10
-    $LIMA_CMD shell "$VM_NAME" -- ls -la /tmp/branding 2>/dev/null || echo "Branding copy may have failed"
+    $LIMA_CMD shell "$VM_NAME" -- bash -c "cp -r /mnt/CORE/branding /tmp/branding && ls -la /tmp/branding" 2>/dev/null || echo "⚠ Branding copy may have failed"
 else
     echo "⚠ Mounted directory not found, using base64 transfer..."
     echo "Transferring vm-bootstrap.sh via base64..."
     base64 < "$PROJECT_ROOT/vm/vm-bootstrap.sh" | \
-        $LIMA_CMD shell "$VM_NAME" -- bash -c "base64 -d > /tmp/vm-bootstrap.sh && chmod +x /tmp/vm-bootstrap.sh && ls -lh /tmp/vm-bootstrap.sh"
+        $LIMA_CMD shell "$VM_NAME" -- bash -c "base64 -d > /tmp/vm-bootstrap.sh && chmod +x /tmp/vm-bootstrap.sh && ls -lh /tmp/vm-bootstrap.sh" 2>/dev/null
     
     echo "Transferring build-core.sh via base64..."
     base64 < "$PROJECT_ROOT/build/build-core.sh" | \
-        $LIMA_CMD shell "$VM_NAME" -- bash -c "base64 -d > /tmp/build-core.sh && chmod +x /tmp/build-core.sh && ls -lh /tmp/build-core.sh"
+        $LIMA_CMD shell "$VM_NAME" -- bash -c "base64 -d > /tmp/build-core.sh && chmod +x /tmp/build-core.sh && ls -lh /tmp/build-core.sh" 2>/dev/null
 fi
 
+echo ""
 echo "Verifying files in VM..."
-$LIMA_CMD shell "$VM_NAME" -- ls -lh /tmp/vm-bootstrap.sh /tmp/build-core.sh
-$LIMA_CMD shell "$VM_NAME" -- test -f /tmp/vm-bootstrap.sh && echo "✓ vm-bootstrap.sh ready" || echo "✗ vm-bootstrap.sh missing"
-$LIMA_CMD shell "$VM_NAME" -- test -f /tmp/build-core.sh && echo "✓ build-core.sh ready" || echo "✗ build-core.sh missing"
+$LIMA_CMD shell "$VM_NAME" -- bash -c "ls -lh /tmp/vm-bootstrap.sh /tmp/build-core.sh" 2>/dev/null
+$LIMA_CMD shell "$VM_NAME" -- bash -c "test -f /tmp/vm-bootstrap.sh && echo '✓ vm-bootstrap.sh ready' || echo '✗ vm-bootstrap.sh missing'" 2>/dev/null
+$LIMA_CMD shell "$VM_NAME" -- bash -c "test -f /tmp/build-core.sh && echo '✓ build-core.sh ready' || echo '✗ build-core.sh missing'" 2>/dev/null
 
 # Ensure scripts are executable
 $LIMA_CMD shell "$VM_NAME" -- chmod +x /tmp/vm-bootstrap.sh /tmp/build-core.sh 2>/dev/null || true
