@@ -1,0 +1,22 @@
+CORE Linux - Industrial Edition
+Build System Summary
+====================
+
+Project Structure:
+  ✓ host/setup-host.sh          - macOS host preparation
+  ✓ vm/vm-bootstrap.sh          - VM provisioning
+  ✓ build/build-core.sh         - ISO builder
+  ✓ branding/grub/              - GRUB theme files
+  ✓ branding/ascii/             - ASCII art and banners
+  ✓ README.md                   - Full documentation
+  ✓ QUICKSTART.md               - Quick start guide
+
+All scripts are executable and ready to run.
+
+Next Steps:
+1. Run: ./host/setup-host.sh
+2. Create ARM64 Ubuntu VM
+3. Run: sudo ./vm-bootstrap.sh (inside VM)
+4. Run: sudo ./build-core.sh (inside VM)
+
+Output: core-industrial-1.0-amd64.iso

@@ -1,0 +1,25 @@
+
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║     ██████╗  ██████╗ ██████╗ ███████╗                   ║
+║     ██╔══██╗██╔═══██╗██╔══██╗██╔════╝                   ║
+║     ██║  ██║██║   ██║██████╔╝█████╗                     ║
+║     ██║  ██║██║   ██║██╔══██╗██╔══╝                     ║
+║     ██████╔╝╚██████╔╝██║  ██║███████╗                   ║
+║     ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝                   ║
+║                                                           ║
+║          The Kernel of Industry                           ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+
+CORE Linux - Industrial Edition v1.0
+Built for reliability, performance, and industrial applications.
+
+System Information:
+  Hostname: core-industrial
+  Architecture: x86_64
+  Kernel: CORE_Industrial
+
+Documentation: https://core-linux.org/docs
+Support: https://core-linux.org/support
+

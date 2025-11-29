@@ -1,0 +1,36 @@
+# CORE Linux - Industrial Edition
+# GRUB Theme Configuration
+# Colors: Steel Grey (#6A6A6A) + Industrial Red (#C00000)
+
+desktop-color: #1a1a1a
+desktop-image: "background.png"
+title-text: "CORE Linux - Industrial Edition"
+title-font: "DejaVu Sans Bold 16"
+title-color: #C00000
+
+message-font: "DejaVu Sans 12"
+message-color: #6A6A6A
+message-bg-color: #1a1a1a
+
+terminal-font: "DejaVu Sans Mono 12"
+terminal-box: "terminal_box_*.png"
+terminal-left: "2"
+terminal-top: "2"
+terminal-width: "76"
+terminal-height: "20"
+terminal-border-color: #C00000
+
+# Boot menu
+boot-menu-border-color: #C00000
+boot-menu-entry-font: "DejaVu Sans 12"
+boot-menu-entry-color: #6A6A6A
+boot-menu-selected-entry-color: #C00000
+boot-menu-selected-entry-bg-color: #2a2a2a
+boot-menu-highlight-color: #C00000
+boot-menu-highlight-bg-color: #3a3a3a
+
+# Progress bar
+progress-bar-border-color: #C00000
+progress-bar-fill-color: #C00000
+progress-bar-bg-color: #1a1a1a
+

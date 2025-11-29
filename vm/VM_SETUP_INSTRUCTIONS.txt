@@ -1,0 +1,31 @@
+CORE Linux - Industrial Edition
+VM Setup Instructions
+======================
+
+After running setup-host.sh, you need to:
+
+1. Create a new VM in UTM or Parallels:
+   - Type: Linux
+   - Architecture: ARM64
+   - Memory: At least 8GB (16GB recommended)
+   - Disk: At least 50GB
+   - Use the downloaded Ubuntu cloud image
+
+2. Start the VM and login
+
+3. Copy vm-bootstrap.sh into the VM:
+   - Use shared folders, or
+   - SCP, or
+   - Copy-paste the script content
+
+4. Run inside VM:
+   chmod +x vm-bootstrap.sh
+   sudo ./vm-bootstrap.sh
+
+5. After bootstrap completes, copy build-core.sh into VM
+
+6. Run the build:
+   chmod +x build-core.sh
+   sudo ./build-core.sh
+
+The ISO will be generated in the build directory.
