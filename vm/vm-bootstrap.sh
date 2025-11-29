@@ -36,6 +36,10 @@ fi
 # Update package lists
 echo "Updating package lists..."
 export DEBIAN_FRONTEND=noninteractive
+
+# Enable multiarch for x86_64 packages (needed for GRUB and cross-compilation)
+echo "Enabling multiarch support for x86_64..."
+dpkg --add-architecture amd64
 apt-get update -qq
 
 # Install essential build tools
@@ -54,7 +58,7 @@ apt-get install -y \
     squashfs-tools \
     grub-common \
     grub2-common \
-    grub-efi-amd64-bin \
+    grub-efi-amd64-bin:amd64 \
     dialog \
     whiptail \
     rsync \
