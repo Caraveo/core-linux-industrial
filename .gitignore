@@ -1,0 +1,27 @@
+# CORE Linux Build Artifacts
+*.iso
+*.iso.sha256
+*.img
+*.log
+
+# Build directories (in VM)
+/opt/core-build/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# VM files
+*.utm
+*.pvm
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# IDE
+.vscode/
+.idea/
+
