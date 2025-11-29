@@ -19,11 +19,12 @@ echo -e "${RED}║${NC}  ${GREY}C O R E   L I N U X   -   F U L L   A U T O M A 
 echo -e "${RED}╚═══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 echo "This script will:"
-echo "  1. Install Lima (if needed)"
-echo "  2. Create and configure Ubuntu VM"
-echo "  3. Bootstrap the VM with build tools"
-echo "  4. Build CORE Linux ISO"
-echo "  5. Copy ISO to macOS"
+echo "  1. Delete existing VM (if present) for clean build"
+echo "  2. Install Lima (if needed)"
+echo "  3. Create and configure Ubuntu VM"
+echo "  4. Bootstrap the VM with build tools"
+echo "  5. Build CORE Linux ISO"
+echo "  6. Copy ISO to macOS"
 echo ""
 # Auto-continue if running non-interactively
 if [[ -t 0 ]]; then
@@ -33,6 +34,30 @@ if [[ -t 0 ]]; then
         exit 0
     fi
 fi
+
+VM_NAME="core-build"
+
+# Step 0: Delete existing VM if present
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Step 0: Cleaning up existing VM (if present)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if limactl list | grep -q "$VM_NAME"; then
+    echo -e "${YELLOW}Found existing VM '$VM_NAME'. Deleting for clean build...${NC}"
+    # Stop VM if running
+    if limactl list | grep "$VM_NAME" | grep -q "Running"; then
+        echo "Stopping VM..."
+        limactl stop "$VM_NAME" || true
+        sleep 2
+    fi
+    # Delete VM
+    echo "Deleting VM..."
+    limactl delete "$VM_NAME" || true
+    echo -e "${GREEN}✓ Existing VM deleted${NC}"
+else
+    echo "No existing VM found. Starting fresh."
+fi
+echo ""
 
 # Step 1: Setup Lima VM
 echo ""
@@ -74,7 +99,6 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "Step 4: Copying ISO to macOS"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-VM_NAME="core-build"
 OUTPUT_DIR="$SCRIPT_DIR/output"
 mkdir -p "$OUTPUT_DIR"
 
