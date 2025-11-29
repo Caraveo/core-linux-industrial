@@ -29,12 +29,36 @@ if ! limactl list | grep -q "$VM_NAME"; then
     exit 1
 fi
 
-# Start VM if not running
-if ! limactl list | grep "$VM_NAME" | grep -q "Running"; then
-    echo "Starting VM..."
-    limactl start "$VM_NAME"
-    sleep 5
+# Stop VM if running to ensure clean state before build
+if limactl list | grep "$VM_NAME" | grep -q "Running"; then
+    echo -e "${YELLOW}VM is running. Stopping to ensure clean state...${NC}"
+    limactl stop "$VM_NAME"
+    echo "Waiting for VM to fully stop..."
+    sleep 3
 fi
+
+# Start VM fresh
+echo "Starting VM..."
+limactl start "$VM_NAME"
+echo "Waiting for VM to be ready..."
+sleep 5
+
+# Kill any existing build processes to ensure clean start
+echo "Checking for existing build processes..."
+limactl shell "$VM_NAME" -- bash -c "
+    # Kill any running build-core.sh processes
+    pkill -f 'build-core.sh' 2>/dev/null || true
+    # Kill any make processes in build directories
+    pkill -f 'make.*ARCH=x86_64' 2>/dev/null || true
+    # Wait a moment for processes to terminate
+    sleep 2
+    # Check if any are still running
+    if pgrep -f 'build-core.sh' >/dev/null 2>&1; then
+        echo 'Warning: Some build processes may still be running'
+    else
+        echo '✓ No existing build processes found'
+    fi
+" || echo "Note: Could not check for existing processes (VM may still be starting)"
 
 # Copy branding if needed
 echo "Ensuring branding files are in VM..."
